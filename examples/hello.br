@@ -1,0 +1,40 @@
+// Hello World Example
+// Demonstrates basic UART output
+
+const UART_BASE: u32 = 0xB8000000;
+
+fn uart_write_byte(byte: u8) {
+    // Wait for TX ready (bit 5)
+    loop {
+        let status = peek(UART_BASE + 4);
+        if (status & 0x20) != 0 {
+            break;
+        }
+    }
+    // Write byte to UART
+    poke(UART_BASE, byte as u32);
+}
+
+fn uart_write_str(s: &str) {
+    for c in s.chars() {
+        uart_write_byte(c as u8);
+    }
+}
+
+fn main() {
+    // Initialize UART
+    poke(UART_BASE, 0);
+    poke(UART_BASE + 4, 115200);
+
+    // Write hello message
+    uart_write_str("Hello, BedRock!\n");
+    
+    // Infinite loop
+    loop {
+        uart_write_byte(65);  // 'A'
+    }
+}
+
+// Entry point
+main();
+loop {}
